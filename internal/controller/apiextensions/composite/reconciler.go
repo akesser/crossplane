@@ -492,7 +492,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 		cd := composed.New(composed.FromReference(ta.Reference))
 		rendered := true
 		if err := r.composed.Render(ctx, cr, cd, ta.Template); err != nil {
-			log.Debug(errRenderCD, "error", err, "index", i)
+			log.Debug(errRenderCD, "error", err, "index", i, "templateAssociation", ta.Template.Name)
 			r.record.Event(cr, event.Warning(reasonCompose, errors.Wrapf(err, errFmtRender, i)))
 			rendered = false
 		}
@@ -528,7 +528,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 			continue
 		}
 		if err := r.client.Apply(ctx, cd.resource, append(mergeOptions(cd.appliedPatches), resource.MustBeControllableBy(cr.GetUID()))...); err != nil {
-			log.Debug(errApply, "error", err)
+			log.Debug(errApply, "error", err, "object", cd.resource.GetName())
 			err = errors.Wrap(err, errApply)
 			r.record.Event(cr, event.Warning(reasonCompose, err))
 			return reconcile.Result{}, err
