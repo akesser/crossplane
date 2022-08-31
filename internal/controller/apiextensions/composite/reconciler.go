@@ -528,9 +528,11 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 			continue
 		}
 		if err := r.client.Apply(ctx, cd.resource, append(mergeOptions(cd.appliedPatches), resource.MustBeControllableBy(cr.GetUID()))...); err != nil {
-			log.Debug(errApply, "error", err)
+			kind := cd.resource.GetObjectKind().GroupVersionKind().GroupKind().Kind
+			name := cd.resource.GetName()
+			log.Debug(errApply, "error", err, "objectName", name, "objectKind", kind)
 			err = errors.Wrap(err, errApply)
-			r.record.Event(cr, event.Warning(reasonCompose, err))
+			r.record.Event(cr, event.Warning(reasonCompose, err, "objectName", name, "objectKind", kind))
 			return reconcile.Result{}, err
 		}
 	}
